@@ -1,86 +1,84 @@
-Personalized Financial and Insurance Scheme Recommendation System
-📌 Overview
+# Personalized Financial and Insurance Scheme Recommendation System
 
-This project is an AI-powered system designed to recommend personalized financial and insurance schemes for individuals and families in India. Unlike traditional one-size-fits-all government schemes, this system evaluates personal, socio-economic, and geographic factors to ensure the right benefits reach the right people.
+## Overview
+This project is an AI-powered system that provides **personalized financial and insurance scheme recommendations** for individuals and families in India. Financial needs vary widely based on age, income, occupation, family structure, and geographic location, yet most government schemes are offered uniformly. This system bridges that gap using data-driven intelligence and a **voice-first, agentic AI architecture**.
 
-The solution integrates an end-to-end agentic voice system, allowing users to interact naturally through speech, making it highly accessible for rural and semi-urban populations.
+The platform is designed to be inclusive and accessible, especially for users with limited digital literacy, by enabling **end-to-end voice-based interaction** instead of traditional form-driven workflows.
 
-🎯 Problem Statement
+The application is fully integrated into a **Flutter-based mobile app**, with a **web demo version** available for browser-based access and testing.
 
-Financial and insurance needs in India vary significantly based on age, gender, occupation, income level, and location. However, government schemes are often offered uniformly without personal assessment, leading to:
+---
 
-Underutilization by eligible beneficiaries
+## Problem Statement
+In India, financial and insurance requirements differ significantly across regions and populations. A unified approach to welfare distribution often leads to:
+- Eligible beneficiaries missing out on schemes  
+- Inefficient allocation of government resources  
+- Low awareness due to complex application processes  
 
-Inefficient distribution of welfare benefits
+This project addresses these challenges by analyzing personal and geographic data to recommend the most relevant schemes for each user.
 
-This project addresses these gaps using a data-driven, AI-based approach.
+---
 
-💡 Solution
+## Solution Approach
+The system collects user information such as age, gender, occupation, income level, family size, and location through natural voice conversations. Using AI-driven reasoning, it evaluates eligibility and relevance to generate tailored scheme recommendations.
 
-The system:
+A key component is the **agentic voice system**, which dynamically asks follow-up questions, maintains conversation context, and guides users step by step.
 
-Collects user details such as age, income, occupation, family size, and location
+---
 
-Analyzes eligibility using rule-based logic and AI models
+## Agentic Voice Architecture
+- **Agent Framework:** Pipecat  
+- **LLM:** Ollama (local inference)  
+- **Speech-to-Text (STT):** Whisper  
+- **Text-to-Speech (TTS):** Piper  
 
-Recommends the most relevant financial and insurance schemes
+This architecture ensures low-latency, privacy-friendly, and offline-capable interactions.
 
-Uses an agentic voice assistant to guide users through the entire process via conversation
+---
 
-🔊 Agentic Voice System
+## Application Platforms
+- 📱 **Mobile App:** Built using Flutter  
+- 🌐 **Web Demo:** Browser-accessible demonstration version  
+- 🎙️ Voice-first interaction across platforms  
 
-Speech-to-Text for user input
+---
 
-Intent detection and context management
+## Key Features
+- Personalized financial and insurance scheme recommendations  
+- End-to-end voice-based user interaction  
+- Context-aware, agent-driven conversation flow  
+- Multilingual Indian languages
+- Cross-platform support (Mobile + Web)  
+- Designed for rural and semi-urban accessibility  
+- Scalable and modular architecture  
 
-Dynamic follow-up questions for missing data
+---
 
-Personalized scheme reasoning and recommendations
+## Impact
+- Improves financial inclusion  
+- Increases awareness of government schemes  
+- Enables equitable welfare distribution  
+- Reduces dependency on manual assistance  
 
-Text-to-Speech for clear voice responses
+---
 
-🚀 Key Features
+## Future Enhancements
+- Real-time government scheme data integration  
+- Predictive financial planning and risk analysis  
+- IVR-based deployment  
 
-Personalized scheme recommendations
+---
 
-Voice-first, form-free interaction
+## Tech Stack
+- **Frontend (Mobile):** Flutter  
+- **Web Demo:** Flutter Web  
+- **Voice Agent Framework:** Pipecat  
+- **LLM:** Ollama  
+- **STT:** Whisper  
+- **TTS:** Piper  
+- **Backend:** API-based services and WebRTC
 
-Inclusive design for low digital literacy users
+---
 
-Scalable and extensible architecture
-
-🌍 Impact
-
-Improves financial inclusion
-
-Enhances awareness of government schemes
-
-Promotes equitable welfare distribution
-
-🔮 Future Enhancements
-
-Real-time government scheme APIs
-
-Multilingual voice support
-
-Predictive analytics for financial planning
-
-🛠️ Tech Stack (Optional)
-
-AI/ML for eligibility analysis
-
-Agentic Voice Pipeline (STT, LLM, TTS)
-
-Backend APIs
-
-Web / Mobile Interface
-
-If you want, I can also:
-
-Make this hackathon-optimized
-
-Convert it to one-page README
-
-Add architecture diagram section
-
-Tailor it for college submission or incubator pitch
+## License
+Zarnex.ai
