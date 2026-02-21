@@ -9,6 +9,7 @@ import sys
 
 from dotenv import load_dotenv
 from loguru import logger
+
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
@@ -22,9 +23,9 @@ from pipecat.runner.types import RunnerArguments
 from pipecat.runner.utils import parse_telephony_websocket
 from pipecat.serializers.twilio import TwilioFrameSerializer
 
-from pipecat.services.ollama.llm import OLLamaLLMService
 from pipecat.services.sarvam.stt import SarvamSTTService
 from pipecat.services.sarvam.tts import SarvamTTSService
+from pipecat.services.groq import GroqLLMService   # ✅ CORRECT IMPORT
 
 from pipecat.transports.base_transport import BaseTransport
 from pipecat.transports.websocket.fastapi import (
@@ -41,31 +42,84 @@ logger.add(sys.stderr, level="DEBUG")
 async def run_bot(transport: BaseTransport, handle_sigint: bool):
 
     stt = SarvamSTTService(
-        api_key="sk_az84fv0d_zXsaXDXudsP8XFrdvxJZ4JOo",
+        api_key=os.getenv("SARVAM_API_KEY"),
         model="saarika:v2.5",
     )
 
     tts = SarvamTTSService(
-        api_key="sk_az84fv0d_zXsaXDXudsP8XFrdvxJZ4JOo",
+        api_key=os.getenv("SARVAM_API_KEY"),
         model="bulbul:v2",
         voice_id="manisha",
     )
-    llm = OLLamaLLMService(
-        model="llama3.2:1b",
-        base_url="http://localhost:11434/v1"
+
+    llm = GroqLLMService(
+        api_key=os.getenv("GROQ_API_KEY"),
+        model="llama-3.1-8b-instant",
+        temperature=0.3,
+        max_tokens=300,
+        stream=True,
     )
+
+    # ✅ FIXED messages structure
     messages = [
         {
             "role": "system",
-            "content": (
-                "You are a friendly assistant making an outbound phone call. Your responses will be read aloud, "
-                "so keep them concise and conversational. Avoid special characters or formatting. "
-                "Begin by politely greeting the person and explaining why you're calling."
-            ),
-        },
+            "content": """You are Zarnex Insurance Agent.
+You speak to users on a phone call.
+Everything you say is converted to speech.
+
+VOICE RULES:
+Speak in short clear sentences.
+Do not speak punctuation symbols.
+Do not read tags aloud.
+Tags are for the system only.
+
+GREETING AND INSURANCE TYPE:
+Start in English.
+Greet the user politely.
+Explain that you help people find suitable insurance.
+Ask which insurance they are looking for.
+
+<options>
+Life Insurance
+Health Insurance
+Vehicle Insurance
+Home Insurance
+Travel Insurance
+</options>
+
+STEP BY STEP QUESTIONS:
+Ask only one question at a time.
+
+SEARCH STEP:
+After collecting all details say
+I am now searching the web and finding the best policies for you
+
+POLICY RESULT:
+
+<policy_slider>
+[
+{
+"id": "1",
+"name": "LIC Tech Term",
+"logo_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVuvpbsJJKjHGbqqEOwDe3Ee9XbQ_zUTG4Yw&s",
+"details": "Scraped Analysis High claim settlement ratio and trusted by families",
+"premium": "Eight hundred fifty rupees per month",
+"link": "https://www.licindia.in/"
+}
+]
+</policy_slider>
+
+If the user asks for a human reply with this tag only
+
+<call_agent>9159747001</call_agent>
+
+Talk only about insurance."""
+        }
     ]
 
     context = LLMContext(messages)
+
     user_aggregator, assistant_aggregator = LLMContextAggregatorPair(
         context,
         user_params=LLMUserAggregatorParams(
@@ -75,12 +129,12 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
 
     pipeline = Pipeline(
         [
-            transport.input(),  # Websocket input from client
-            stt,  # Speech-To-Text
+            transport.input(),
+            stt,
             user_aggregator,
-            llm,  # LLM
-            tts,  # Text-To-Speech
-            transport.output(),  # Websocket output to client
+            llm,
+            tts,
+            transport.output(),
             assistant_aggregator,
         ]
     )
@@ -97,7 +151,6 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
-        # Kick off the outbound conversation, waiting for the user to speak first
         logger.info("Starting outbound call conversation")
 
     @transport.event_handler("on_client_disconnected")
@@ -106,22 +159,22 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
         await task.cancel()
 
     runner = PipelineRunner(handle_sigint=handle_sigint)
-
     await runner.run(task)
 
 
 async def bot(runner_args: RunnerArguments):
     """Main bot entry point compatible with Pipecat Cloud."""
+
     try:
-        transport_type, call_data = await parse_telephony_websocket(runner_args.websocket)
+        transport_type, call_data = await parse_telephony_websocket(
+            runner_args.websocket
+        )
     except ValueError as e:
         logger.error(f"Failed to parse telephony WebSocket: {e}")
         return
+
     logger.info(f"Auto-detected transport: {transport_type}")
 
-    # Access custom stream parameters passed from TwiML
-    # Use the body data to personalize the conversation
-    # by loading customer data based on the to_number or from_number
     body_data = call_data.get("body", {})
     to_number = body_data.get("to_number")
     from_number = body_data.get("from_number")
@@ -145,6 +198,4 @@ async def bot(runner_args: RunnerArguments):
         ),
     )
 
-    handle_sigint = runner_args.handle_sigint
-
-    await run_bot(transport, handle_sigint)
+    await run_bot(transport, runner_args.handle_sigint)
