@@ -1,130 +1,923 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twilio Outbound Chatbot</title>
+    <link rel="icon" type="image/png" href="/image.png">
+    <title>zarnex.ai | Autonomous Voice AI</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&family=Playfair+Display:ital,wght@1,700&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        :root {
+            --primary: #E31B23;
+            --primary-hover: #c4141b;
+            --bg: #ffffff;
+            --surface: #f8fafc;
+            --border: rgba(0, 0, 0, 0.08);
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --font-main: 'Inter', sans-serif;
+            --font-heading: 'Outfit', sans-serif;
+            --font-accent: 'Playfair Display', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            line-height: 1.5;
         }
-        .container {
-            background: white;
-            padding: 30px;
+
+        /* Background Gradient Effect */
+        .bg-glow {
+            position: fixed;
+            top: -20%;
+            right: -10%;
+            width: 60%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(227, 27, 35, 0.05) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-placeholder {
+            width: 1px;
+            height: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .nav-cta {
+            background: var(--primary);
+            color: white;
+            padding: 10px 24px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
         }
+
+        .nav-cta:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Hero Section */
+        .hero {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 80px;
+            padding: 80px 80px 120px;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: center;
+        }
+
+        .hero-content {
+            max-width: 640px;
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border: 1px solid rgba(227, 27, 35, 0.3);
+            background: rgba(227, 27, 35, 0.05);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 32px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-pill span {
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
         h1 {
-            color: #333;
+            font-family: var(--font-heading);
+            font-size: 72px;
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -2px;
+            margin-bottom: 24px;
+        }
+
+        h1 em {
+            display: block;
+            font-family: var(--font-accent);
+            font-style: italic;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 82px;
+            margin-top: 10px;
+        }
+
+        .description {
+            color: var(--text-muted);
+            font-size: 18px;
+            margin-bottom: 40px;
+            max-width: 520px;
+            line-height: 1.6;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-family: var(--font-heading);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(227, 27, 35, 0.2);
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: #000;
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background: #222;
+            transform: translateY(-2px);
+        }
+
+        /* Try It Section */
+        .try-it {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 0 80px;
             text-align: center;
         }
-        .form-group {
-            margin-bottom: 15px;
+
+        .try-it h2 {
+            font-family: var(--font-heading);
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 48px;
+            letter-spacing: -1px;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+
+        .try-it-card {
+            border: 1px solid rgba(227, 27, 35, 0.2);
+            border-radius: 24px;
+            padding: 60px;
+            background: #ffffff;
+            position: relative;
+            overflow: hidden;
         }
-        input[type="tel"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+
+        .try-it-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 60px;
         }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
+
+        .selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
-        button:hover {
-            background-color: #45a049;
+
+        .visualizer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 60px;
+            position: relative;
         }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
+
+        .viz-flow {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
-        .result {
-            margin-top: 20px;
-            padding: 10px;
+
+        .viz-node {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        /* Sequential Connection Lines */
+        .connector-wrap {
+            position: absolute;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .viz-line {
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), #fb7185);
+            width: 0;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px var(--primary-glow);
             border-radius: 4px;
-            display: none;
         }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+
+        .viz-line.active {
+            width: 100%;
         }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+
+        /* Line 1: Outbound -> Live */
+        #line1-wrap {
+            left: 170px;
+            /* Adjusted based on Outbound node width */
+            width: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Line 2: Live -> Agents */
+        #line2-wrap {
+            left: 50%;
+            width: 150px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .viz-center {
+            width: 160px;
+            height: 160px;
+            background: linear-gradient(135deg, #ffefea 0%, #fff 100%);
+            border: 2px solid #ffdbd1;
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 20px 40px rgba(227, 27, 35, 0.05);
+            position: relative;
+            z-index: 2;
+        }
+
+        .avatar-item.active {
+            color: var(--primary);
+            transform: scale(1.1);
+            transition: all 0.5s ease;
+        }
+
+        .avatar-item.active .avatar-img {
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .viz-center .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+
+        .viz-center .icon-grid span {
+            width: 6px;
+            height: 6px;
+            background: #000;
+            border-radius: 50%;
+        }
+
+        .viz-avatars {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .avatar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .avatar-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #eee;
+            overflow: hidden;
+        }
+
+        .avatar-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .explore-btn {
+            background: #ff8a8f;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto 40px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(255, 138, 143, 0.3);
+        }
+
+        .try-form-title {
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 24px;
+        }
+
+        .try-form {
+            display: flex;
+            gap: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .try-form .input-wrap {
+            flex: 1.5;
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 0 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .try-form .input-wrap.name-wrap {
+            flex: 1;
+        }
+
+        .try-form .input-wrap:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(227, 27, 35, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .try-form .input-icon {
+            color: #94a3b8;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .try-form select {
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            color: var(--text);
+            padding: 14px 0;
+            margin-right: 8px;
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            -webkit-appearance: none;
+            appearance: none;
+            border-right: 1.5px solid #e2e8f0;
+            padding-right: 12px;
+        }
+
+        .try-form input {
+            width: 100%;
+            border: none !important;
+            background: transparent !important;
+            padding: 16px 0;
+            outline: none !important;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+            font-family: inherit;
+            box-shadow: none !important;
+        }
+
+        .try-form input::placeholder {
+            color: #94a3b8;
+        }
+
+        .btn-get-call {
+            background: var(--primary);
+            color: white;
+            padding: 0 32px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-family: var(--font-heading);
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            box-shadow: 0 8px 16px rgba(227, 27, 35, 0.15);
+        }
+
+        .btn-get-call:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(227, 27, 35, 0.2);
+        }
+
+        .btn-get-call:active {
+            transform: translateY(0);
+        }
+
+        .btn-get-call:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Typing cursor animation */
+        .typing::after {
+            content: '|';
+            animation: blink 0.8s infinite;
+            margin-left: 2px;
+            color: var(--primary);
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Mockup Glass Window */
+        .mockup-container {
+            position: relative;
+        }
+
+        .mockup-window {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.1);
+            height: 520px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .window-header {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.red {
+            background: #ff5f56;
+        }
+
+        .dot.yellow {
+            background: #ffbd2e;
+        }
+
+        .dot.green {
+            background: #27c93f;
+        }
+
+        .window-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .window-body {
+            padding: 32px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: radial-gradient(circle at top right, rgba(227, 27, 35, 0.02), transparent);
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 16px 20px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chat-bubble.ai {
+            background: #f1f5f9;
+            color: var(--text);
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+
+        .chat-bubble.user {
+            background: #0f172a;
+            color: white;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #059669;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: auto;
+            background: #ecfdf5;
+            padding: 8px 16px;
+            border-radius: 100px;
+            width: fit-content;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+
+
+        /* Media Queries */
+        @media (max-width: 1200px) {
+            nav {
+                padding: 24px 40px;
+            }
+
+            .hero {
+                padding: 60px 40px;
+                gap: 40px;
+            }
+
+            h1 {
+                font-size: 56px;
+            }
+
+            h1 em {
+                font-size: 64px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-content {
+                margin: 0 auto;
+            }
+
+            .description {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .btn-group {
+                justify-content: center;
+            }
+
+            .nav-links {
+                display: none;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Twilio Outbound Chatbot</h1>
-        <p style="text-align: center; color: #666; margin-bottom: 20px;">Call from: +1 218 403 2410</p>
-        <form id="dialoutForm">
-        <div class="form-group">
-                <label for="toNumber">To Number:</label>
-                <input type="tel" id="toNumber" name="to_number" placeholder="+1234567890" required pattern="^\+[1-9]\d{1,14}$">
-                <small style="color: #666;">Format: +1234567890 (E.164 format)</small>
+    <div class="bg-glow"></div>
+
+    <nav>
+        <div class="logo-placeholder"></div>
+        <a href="#" class="nav-cta">Download</a>
+    </nav>
+
+    <main class="hero">
+        <div class="hero-content">
+            <div class="tag-pill">
+                <span></span>
+                Operational Voice AI for the Enterprise
             </div>
-            <!-- From number is fixed -->
-            <input type="hidden" id="fromNumber" name="from_number" value="+12184032410">
-            <button type="submit" id="dialButton">Make Outbound Call</button>
-        </form>
-        <div id="result" class="result"></div>
-    </div>
+            <h1>
+                Know your Insurance benefits<br>
+                <em>in your own language and convenience</em>
+            </h1>
+            <p class="description">
+                Zarnex.ai is autonomous Insurance voice and conversational agent. Unlike chatbots or basic IVR systems,
+                Zarnex.ai
+                agents perform real actions during outbound calls.
+                Connect with leads instantly, book appointments in your calendar, and update CRM records without human
+                handoff. Fully auditable and infinitely scalable.
+            </p>
+
+            <div class="btn-group">
+                <button class="btn-primary" onclick="document.getElementById('toNumber').focus()">
+                    Request early access
+                    <i data-lucide="arrow-right" size="18"></i>
+                </button>
+                <a href="#try-it" class="btn-secondary">
+                    <i data-lucide="play-circle" size="18"></i>
+                    See how it works
+                </a>
+            </div>
+        </div>
+        <div class="mockup-container">
+            <div class="mockup-window">
+                <div class="window-header">
+                    <div class="dots">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                    </div>
+                    <div class="window-title">AnnaUni Agent</div>
+                    <div style="width: 48px"></div>
+                </div>
+                <div class="window-body">
+                    <div class="chat-bubble ai">
+                        <strong>zarnex.ai Support</strong><br>
+                        Hi this is zarnex.ai how can i help you?
+                    </div>
+                    <div class="chat-bubble user"
+                        style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #34d399;">
+                        Can you tell me about life insurance policy.
+                    </div>
+                    <div class="chat-bubble ai" id="typingBubble">
+                        <!-- Animated text will appear here -->
+                    </div>
+                    <div id="userReply" class="chat-bubble user" style="display: none;">
+                        "yeah i can help you with that"
+                    </div>
+
+                    <div class="status-pill" id="statusPill" style="margin-top: 20px;">
+                        <div class="status-dot"></div>
+                        AI processing in real-time
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <section class="try-it" id="try-it">
+        <h2>Try It for Yourself</h2>
+        <div class="try-it-card">
+            <div class="visualizer" style="position: relative;">
+                <div class="viz-flow" style="position: relative;">
+                    <div class="viz-node" id="outboundNode">
+                        Outbound Agent
+                        <i data-lucide="refresh-cw" size="18" stroke-width="2.5"></i>
+                    </div>
+                    <!-- Line 1 Container -->
+                    <div id="line1-wrap" class="connector-wrap">
+                        <div id="line1" class="viz-line"></div>
+                    </div>
+                </div>
+
+                <div class="viz-center">
+                    <!-- Line 2 Container -->
+                    <div id="line2-wrap" class="connector-wrap">
+                        <div id="line2" class="viz-line"></div>
+                    </div>
+                    <div class="icon-grid">
+                        <span></span><span></span><span></span>
+                        <span></span><span></span><span></span>
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div style="font-weight: 800; font-size: 14px;">Live Call</div>
+                </div>
+
+                <div class="viz-avatars">
+                    <div class="avatar-item" id="femaleAgent">
+                        <div class="avatar-img">
+                            <img src="/image.png" alt="zarnex.ai">
+                        </div>
+                        zarnex.ai
+                    </div>
+                </div>
+            </div>
+
+            <button class="explore-btn">
+                Explore More
+                <i data-lucide="arrow-up-right" size="16"></i>
+            </button>
+
+            <div class="try-form-title">Enter your details to receive a live call</div>
+
+            <form class="try-form" id="liveCallForm">
+                <div class="input-wrap">
+                    <i data-lucide="phone" class="input-icon" size="18"></i>
+                    <select id="countryCode">
+                        <option value="+91">+91</option>
+                        <option value="+1">+1</option>
+                    </select>
+                    <input type="tel" id="liveToNumber" placeholder="Your Phone Number" required>
+                </div>
+                <div class="input-wrap name-wrap">
+                    <i data-lucide="user" class="input-icon" size="18"></i>
+                    <input type="text" id="userName" placeholder="Your Name" required>
+                </div>
+                <button type="submit" class="btn-get-call" id="getCallBtn">Get a Call</button>
+            </form>
+            <div id="callResult" style="margin-top: 20px; font-size: 14px; font-weight: 600; min-height: 20px;"></div>
+        </div>
+    </section>
+
+    <footer
+        style="text-align: center; padding: 0 0 100px; background: linear-gradient(to top, rgba(227, 27, 35, 0.08), transparent);">
+        <img src="/zarnex.png" alt="Zarnex.ai Official Logo"
+            style="width: 800px; max-width: 95%; opacity: 0.95; filter: drop-shadow(0 30px 60px rgba(0,0,0,0.15));">
+    </footer>
 
     <script>
-        document.getElementById('dialoutForm').addEventListener('submit', async function(e) {
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Typing Effect Logic
+        const typingBubble = document.getElementById('typingBubble');
+        const userReply = document.getElementById('userReply');
+        const aiMessage = '"I can certainly help you with life insurance. Are you looking for term insurance or a whole life policy?"';
+
+        function typeWriter(text, i, fnCallback) {
+            if (i < text.length) {
+                typingBubble.innerHTML = text.substring(0, i + 1) + '<span class="typing"></span>';
+                setTimeout(function () {
+                    typeWriter(text, i + 1, fnCallback)
+                }, 40);
+            } else {
+                typingBubble.innerHTML = text;
+                setTimeout(fnCallback, 1500);
+            }
+        }
+
+        function runAnimationSequence() {
+            // Reset state
+            typingBubble.innerHTML = '';
+            userReply.style.display = 'none';
+            userReply.style.opacity = '0';
+
+            // Animation sequence
+            setTimeout(() => {
+                typeWriter(aiMessage, 0, () => {
+                    userReply.style.display = 'block';
+                    userReply.style.animation = 'fadeIn 0.5s ease forwards';
+
+                    // Restart after showing user reply
+                    setTimeout(runAnimationSequence, 3000);
+                });
+            }, 500);
+        }
+
+        // Start cycling animation
+        runAnimationSequence();
+
+        // Live Call Form Handling (Migrated logic)
+        document.getElementById('liveCallForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const toNumberInput = document.getElementById('toNumber');
-            const fromNumber = "+12184032410"; // Fixed from number
-            const button = document.getElementById('dialButton');
-            const resultDiv = document.getElementById('result');
+            const countryCode = document.getElementById('countryCode').value;
+            const phoneInput = document.getElementById('liveToNumber');
+            const button = document.getElementById('getCallBtn');
+            const resultDiv = document.getElementById('callResult');
 
-            // Clean phone number
-            const toNumber = toNumberInput.value.replace(/\s+/g, '');
+            // Clean and format phone number
+            let rawNumber = phoneInput.value.replace(/\s+/g, '').replace(/^[0]/, '');
+            if (!rawNumber.startsWith('+')) {
+                rawNumber = countryCode + rawNumber;
+            }
 
-            // Update input with cleaned value
-            toNumberInput.value = toNumber;
+            const fromNumber = "+12184032410";
 
-            // Basic validation
-            if (!toNumber.match(/^\+[1-9]\d{1,14}$/)) {
-                resultDiv.className = 'result error';
-                resultDiv.innerHTML = '<strong>Error:</strong> Invalid "To" number format. Use +1234567890';
-                resultDiv.style.display = 'block';
+            if (!rawNumber.match(/^\+[1-9]\d{1,14}$/)) {
+                resultDiv.style.color = '#f87171';
+                resultDiv.innerHTML = 'Error: Invalid phone format. Use E.164 (e.g. +91...)';
                 return;
             }
 
-            // Disable button and show loading
             button.disabled = true;
-            button.textContent = 'Initiating Call...';
+            button.textContent = 'Processing...';
+            resultDiv.style.color = '#64748b';
+            resultDiv.innerHTML = 'Connecting to zarnex.ai...';
 
             try {
                 const response = await fetch('/dialout', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        to_number: toNumber,
+                        to_number: rawNumber,
                         from_number: fromNumber
                     })
                 });
@@ -132,25 +925,36 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    resultDiv.className = 'result success';
-                    resultDiv.innerHTML = `
-                        <strong>Call initiated successfully!</strong><br>
-                        Call SID: ${data.call_sid}<br>
-                        Status: ${data.status}
-                    `;
+                    resultDiv.style.color = '#059669';
+                    resultDiv.innerHTML = `✓ Connection Secured! Initiating sequence...`;
+
+                    // Trigger sequential animation
+                    setTimeout(() => {
+                        document.getElementById('line1').classList.add('active');
+
+                        // After line 1 finishes, start line 2
+                        setTimeout(() => {
+                            document.getElementById('line2').classList.add('active');
+
+                            // After line 2 finishes, light up agent
+                            setTimeout(() => {
+                                document.getElementById('femaleAgent').classList.add('active');
+                                resultDiv.innerHTML = `✓ Sequence Complete! Calling you now...`;
+                            }, 800);
+                        }, 800);
+                    }, 500);
                 } else {
                     throw new Error(data.detail || 'Failed to initiate call');
                 }
             } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.style.color = '#f87171';
+                resultDiv.innerHTML = `Error: ${error.message}`;
             } finally {
-                // Re-enable button
                 button.disabled = false;
-                button.textContent = 'Make Outbound Call';
-                resultDiv.style.display = 'block';
+                button.textContent = 'Get a Call';
             }
         });
     </script>
 </body>
+
 </html>
