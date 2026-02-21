@@ -25,7 +25,7 @@ from pipecat.serializers.twilio import TwilioFrameSerializer
 
 from pipecat.services.sarvam.stt import SarvamSTTService
 from pipecat.services.sarvam.tts import SarvamTTSService
-from pipecat.services.groq import GroqLLMService   # ✅ CORRECT IMPORT
+from pipecat.services.groq import GroqLLMService
 
 from pipecat.transports.base_transport import BaseTransport
 from pipecat.transports.websocket.fastapi import (
@@ -51,71 +51,21 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
         model="bulbul:v2",
         voice_id="manisha",
     )
-
     llm = GroqLLMService(
         api_key=os.getenv("GROQ_API_KEY"),
-        model="llama-3.1-8b-instant",
-        temperature=0.3,
-        max_tokens=300,
-        stream=True,
+        model="groq-2",
+        temperature=0.7,
+        max_tokens=2048,
     )
-
-    # ✅ FIXED messages structure
     messages = [
         {
             "role": "system",
-            "content": """You are Zarnex Insurance Agent.
-You speak to users on a phone call.
-Everything you say is converted to speech.
-
-VOICE RULES:
-Speak in short clear sentences.
-Do not speak punctuation symbols.
-Do not read tags aloud.
-Tags are for the system only.
-
-GREETING AND INSURANCE TYPE:
-Start in English.
-Greet the user politely.
-Explain that you help people find suitable insurance.
-Ask which insurance they are looking for.
-
-<options>
-Life Insurance
-Health Insurance
-Vehicle Insurance
-Home Insurance
-Travel Insurance
-</options>
-
-STEP BY STEP QUESTIONS:
-Ask only one question at a time.
-
-SEARCH STEP:
-After collecting all details say
-I am now searching the web and finding the best policies for you
-
-POLICY RESULT:
-
-<policy_slider>
-[
-{
-"id": "1",
-"name": "LIC Tech Term",
-"logo_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVuvpbsJJKjHGbqqEOwDe3Ee9XbQ_zUTG4Yw&s",
-"details": "Scraped Analysis High claim settlement ratio and trusted by families",
-"premium": "Eight hundred fifty rupees per month",
-"link": "https://www.licindia.in/"
-}
-]
-</policy_slider>
-
-If the user asks for a human reply with this tag only
-
-<call_agent>9159747001</call_agent>
-
-Talk only about insurance."""
-        }
+            "content": (
+                "You are a friendly assistant making an outbound phone call. Your responses will be read aloud, "
+                "so keep them concise and conversational. Avoid special characters or formatting. "
+                "Begin by politely greeting the person and explaining why you're calling."
+            ),
+        },
     ]
 
     context = LLMContext(messages)
