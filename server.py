@@ -14,8 +14,10 @@ import os
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, WebSocket
+from fastapi import FastAPI, HTTPException, Request, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from server_utils import (
     DialoutResponse,
@@ -29,6 +31,37 @@ load_dotenv(override=True)
 
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify your frontend domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    """Serve the main frontend page."""
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Twilio Outbound Chatbot</title>
+        <script>
+            window.location.href = '/static/index.html';
+        </script>
+    </head>
+    <body>
+        <p>Redirecting to frontend...</p>
+    </body>
+    </html>
+    """
 
 
 @app.post("/dialout", response_model=DialoutResponse)
@@ -46,15 +79,20 @@ async def handle_dialout_request(request: Request) -> DialoutResponse:
     """
     logger.info("Received outbound call request")
 
-    dialout_request = await dialout_request_from_request(request)
+    try:
+        dialout_request = await dialout_request_from_request(request)
+        call_result = await make_twilio_call(dialout_request)
 
-    call_result = await make_twilio_call(dialout_request)
-
-    return DialoutResponse(
-        call_sid=call_result.call_sid,
-        status="call_initiated",
-        to_number=call_result.to_number,
-    )
+        return DialoutResponse(
+            call_sid=call_result.call_sid,
+            status="call_initiated",
+            to_number=call_result.to_number,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error initiating call: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/twiml")

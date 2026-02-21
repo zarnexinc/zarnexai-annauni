@@ -78,7 +78,10 @@ async def dialout_request_from_request(request: Request) -> DialoutRequest:
     Raises:
         HTTPException: If required fields are missing or request data is invalid.
     """
-    data = await request.json()
+    try:
+        data = await request.json()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON in request body: {str(e)}")
     try:
         return DialoutRequest.model_validate(data)
     except Exception as e:

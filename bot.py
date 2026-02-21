@@ -41,12 +41,12 @@ logger.add(sys.stderr, level="DEBUG")
 async def run_bot(transport: BaseTransport, handle_sigint: bool):
 
     stt = SarvamSTTService(
-        api_key="",
+        api_key="sk_az84fv0d_zXsaXDXudsP8XFrdvxJZ4JOo",
         model="saarika:v2.5",
     )
 
     tts = SarvamTTSService(
-        api_key="",
+        api_key="sk_az84fv0d_zXsaXDXudsP8XFrdvxJZ4JOo",
         model="bulbul:v2",
         voice_id="manisha",
     )
