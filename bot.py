@@ -6,10 +6,8 @@
 
 import os
 import sys
-
 from dotenv import load_dotenv
 from loguru import logger
-
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
@@ -22,11 +20,9 @@ from pipecat.processors.aggregators.llm_response_universal import (
 from pipecat.runner.types import RunnerArguments
 from pipecat.runner.utils import parse_telephony_websocket
 from pipecat.serializers.twilio import TwilioFrameSerializer
-
 from pipecat.services.sarvam.stt import SarvamSTTService
 from pipecat.services.sarvam.tts import SarvamTTSService
-from pipecat.services.groq import GroqLLMService   # ✅ CORRECT IMPORT
-
+from pipecat.services.groq.llm import GroqLLMService
 from pipecat.transports.base_transport import BaseTransport
 from pipecat.transports.websocket.fastapi import (
     FastAPIWebsocketParams,
@@ -38,6 +34,8 @@ load_dotenv(override=True)
 logger.remove(0)
 logger.add(sys.stderr, level="DEBUG")
 
+from tools.gmail import send_gmail
+from pipecat.frames.frames import FunctionCallResultFrame
 
 async def run_bot(transport: BaseTransport, handle_sigint: bool):
 
@@ -52,71 +50,63 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
         voice_id="manisha",
     )
 
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "send_email",
+                "description": "Send an email via Gmail to the specified recipient with the given subject and body.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "to": {
+                            "type": "string",
+                            "description": "The recipient's email address"
+                        },
+                        "subject": {
+                            "type": "string",
+                            "description": "The subject of the email"
+                        },
+                        "body": {
+                            "type": "string",
+                            "description": "The body content of the email"
+                        }
+                    },
+                    "required": ["to", "subject", "body"]
+                }
+            }
+        }
+    ]
+
     llm = GroqLLMService(
         api_key=os.getenv("GROQ_API_KEY"),
-        model="llama-3.1-8b-instant",
+        model="mixtral-8x7b-32768",
         temperature=0.3,
         max_tokens=300,
         stream=True,
+        tools=tools,
     )
 
     # ✅ FIXED messages structure
     messages = [
-        {
-            "role": "system",
-            "content": """You are Zarnex Insurance Agent.
-You speak to users on a phone call.
-Everything you say is converted to speech.
+        {"role": "system", "content": "You are a mail sender. When the user requests to send mail, ask for the recipient's email address, subject, and body. Then confirm the details with the user. After confirmation, use the send_email tool to send the email."},
 
-VOICE RULES:
-Speak in short clear sentences.
-Do not speak punctuation symbols.
-Do not read tags aloud.
-Tags are for the system only.
 
-GREETING AND INSURANCE TYPE:
-Start in English.
-Greet the user politely.
-Explain that you help people find suitable insurance.
-Ask which insurance they are looking for.
-
-<options>
-Life Insurance
-Health Insurance
-Vehicle Insurance
-Home Insurance
-Travel Insurance
-</options>
-
-STEP BY STEP QUESTIONS:
-Ask only one question at a time.
-
-SEARCH STEP:
-After collecting all details say
-I am now searching the web and finding the best policies for you
-
-POLICY RESULT:
-
-<policy_slider>
-[
-{
-"id": "1",
-"name": "LIC Tech Term",
-"logo_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVuvpbsJJKjHGbqqEOwDe3Ee9XbQ_zUTG4Yw&s",
-"details": "Scraped Analysis High claim settlement ratio and trusted by families",
-"premium": "Eight hundred fifty rupees per month",
-"link": "https://www.licindia.in/"
-}
-]
-</policy_slider>
-
-If the user asks for a human reply with this tag only
-
-<call_agent>9159747001</call_agent>
-
-Talk only about insurance."""
-        }
     ]
+
+    @llm.event_handler("on_function_call")
+    async def on_function_call(llm, function_call):
+        if function_call.name == "send_email":
+            args = function_call.arguments
+            access_token = os.getenv("GMAIL_ACCESS_TOKEN")
+            if not access_token:
+                await llm.push_frame(FunctionCallResultFrame(result="Error: Gmail access token not configured."))
+                return
+            try:
+                send_gmail(access_token, args["to"], args["subject"], args["body"])
+                await llm.push_frame(FunctionCallResultFrame(result="Email sent successfully!"))
+            except Exception as e:
+                await llm.push_frame(FunctionCallResultFrame(result=f"Failed to send email: {str(e)}"))
 
     context = LLMContext(messages)
 
