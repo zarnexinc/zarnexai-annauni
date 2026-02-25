@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2025, Daily
+# Copyright (c) 2026, Zarnexai-Pipecat
 #
-# SPDX-License-Identifier: BSD 2-Clause License
+# Author - @aashiqmustak
 #
 
 import os
@@ -58,7 +58,7 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
         stream=True,
     )
 
-    # ✅ FIXED messages structure
+    
     messages = [
         {"role": "system", "content": "You are a mail sender. When the user requests to send mail, ask for the recipient's email address, subject, and body. Then confirm the details with the user. After confirmation, use the send_email tool to send the email."},
 
