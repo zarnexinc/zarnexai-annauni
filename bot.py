@@ -50,41 +50,12 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
         voice_id="manisha",
     )
 
-    tools = [
-        {
-            "type": "function",
-            "function": {
-                "name": "send_email",
-                "description": "Send an email via Gmail to the specified recipient with the given subject and body.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "to": {
-                            "type": "string",
-                            "description": "The recipient's email address"
-                        },
-                        "subject": {
-                            "type": "string",
-                            "description": "The subject of the email"
-                        },
-                        "body": {
-                            "type": "string",
-                            "description": "The body content of the email"
-                        }
-                    },
-                    "required": ["to", "subject", "body"]
-                }
-            }
-        }
-    ]
-
     llm = GroqLLMService(
         api_key=os.getenv("GROQ_API_KEY"),
         model="mixtral-8x7b-32768",
         temperature=0.3,
         max_tokens=300,
         stream=True,
-        tools=tools,
     )
 
     # ✅ FIXED messages structure
@@ -94,19 +65,6 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
 
     ]
 
-    @llm.event_handler("on_function_call")
-    async def on_function_call(llm, function_call):
-        if function_call.name == "send_email":
-            args = function_call.arguments
-            access_token = os.getenv("GMAIL_ACCESS_TOKEN")
-            if not access_token:
-                await llm.push_frame(FunctionCallResultFrame(result="Error: Gmail access token not configured."))
-                return
-            try:
-                send_gmail(access_token, args["to"], args["subject"], args["body"])
-                await llm.push_frame(FunctionCallResultFrame(result="Email sent successfully!"))
-            except Exception as e:
-                await llm.push_frame(FunctionCallResultFrame(result=f"Failed to send email: {str(e)}"))
 
     context = LLMContext(messages)
 
