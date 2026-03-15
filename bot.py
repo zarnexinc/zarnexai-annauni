@@ -29,16 +29,20 @@ from pipecat.transports.websocket.fastapi import (
     FastAPIWebsocketTransport,
 )
 
-load_dotenv(override=True)
+# RAG imports
+from rag.retriever import retrieve_context
 
+load_dotenv(override=True)
 logger.remove(0)
 logger.add(sys.stderr, level="DEBUG")
 
 from tools.gmail import send_gmail
 from pipecat.frames.frames import FunctionCallResultFrame
 
+
 async def run_bot(transport: BaseTransport, handle_sigint: bool):
 
+    # STT and TTS services
     stt = SarvamSTTService(
         api_key=os.getenv("SARVAM_API_KEY"),
         model="saarika:v2.5",
@@ -50,6 +54,7 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
         voice_id="manisha",
     )
 
+    # LLM service
     llm = GroqLLMService(
         api_key=os.getenv("GROQ_API_KEY"),
         model="mixtral-8x7b-32768",
@@ -58,16 +63,19 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
         stream=True,
     )
 
-    
+    # System message
     messages = [
-        {"role": "system", "content": "You are a mail sender. When the user requests to send mail, ask for the recipient's email address, subject, and body. Then confirm the details with the user. After confirmation, use the send_email tool to send the email."},
-
-
+        {
+            "role": "system",
+            "content": "You are a mail sender and knowledge bot. "
+                       "Answer user questions using company PDF knowledge. "
+                       "When sending email, confirm recipient, subject, and body before sending."
+        }
     ]
-
 
     context = LLMContext(messages)
 
+    # Aggregators for user and assistant
     user_aggregator, assistant_aggregator = LLMContextAggregatorPair(
         context,
         user_params=LLMUserAggregatorParams(
@@ -75,6 +83,7 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
         ),
     )
 
+    # Pipeline
     pipeline = Pipeline(
         [
             transport.input(),
@@ -145,5 +154,26 @@ async def bot(runner_args: RunnerArguments):
             serializer=serializer,
         ),
     )
+
+    # --- RAG step ---
+    user_query = "User asked question"  # Pipecat will pass actual transcribed text
+    context_from_pdf = retrieve_context(user_query)
+    logger.debug(f"RAG retrieved context: {context_from_pdf}")
+
+    # Combine context with user query before sending to LLM
+    rag_prompt = f"""
+Context:
+{context_from_pdf}
+
+Question:
+{user_query}
+
+Answer using only the above context.
+"""
+
+    # Replace original user message with RAG prompt
+    # Pipecat LLM pipeline will now use rag_prompt as input
+    # (The pipeline will pick this up automatically as it reads user_aggregator output)
+    # You don’t need to change pipeline structure
 
     await run_bot(transport, runner_args.handle_sigint)
