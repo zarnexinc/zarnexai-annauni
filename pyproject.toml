@@ -11,4 +11,10 @@ dependencies = [
   "pipecatcloud>=0.2.20",
   "scikit-learn>=1.7.2",
   "twilio",
+  "langchain>=0.1.0",
+  "langchain-community>=0.0.10",
+  "langchain-text-splitters>=0.0.1",
+  "chromadb>=0.4.0",
+  "sentence-transformers>=2.0.0",
+  "pypdf>=4.0.0",
 ]
