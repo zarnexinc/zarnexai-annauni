@@ -31,6 +31,7 @@ from pipecat.transports.websocket.fastapi import (
 
 # RAG imports
 from rag.retriever import retrieve_context
+from rag.rag_processor import RAGProcessor
 
 load_dotenv(override=True)
 logger.remove(0)
@@ -89,6 +90,7 @@ async def run_bot(transport: BaseTransport, handle_sigint: bool):
             transport.input(),
             stt,
             user_aggregator,
+            RAGProcessor(),  # Add RAG processor after user aggregation
             llm,
             tts,
             transport.output(),
@@ -154,26 +156,5 @@ async def bot(runner_args: RunnerArguments):
             serializer=serializer,
         ),
     )
-
-    # --- RAG step ---
-    user_query = "User asked question"  # Pipecat will pass actual transcribed text
-    context_from_pdf = retrieve_context(user_query)
-    logger.debug(f"RAG retrieved context: {context_from_pdf}")
-
-    # Combine context with user query before sending to LLM
-    rag_prompt = f"""
-Context:
-{context_from_pdf}
-
-Question:
-{user_query}
-
-Answer using only the above context.
-"""
-
-    # Replace original user message with RAG prompt
-    # Pipecat LLM pipeline will now use rag_prompt as input
-    # (The pipeline will pick this up automatically as it reads user_aggregator output)
-    # You don’t need to change pipeline structure
 
     await run_bot(transport, runner_args.handle_sigint)
